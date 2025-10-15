@@ -91,54 +91,72 @@ async def get_tv_channels(search: str = ""):
                     status_code=400
                 )
             
-            # Formatear los primeros 20 resultados con sus streams
+            # Formatear resultados con sus streams - SOLO canales con streams disponibles
             channels = []
-            for channel in filtered_channels[:20]:
+            for channel in filtered_channels:
                 channel_id = channel.get("id", "")
                 
                 # Obtener streams para este canal
                 channel_streams = streams_by_channel.get(channel_id, [])
-                streams_list = []
-                for stream in channel_streams[:5]:  # Limitar a 5 streams por canal
-                    streams_list.append({
-                        "url": stream.get("url", ""),
-                        "title": stream.get("title", ""),
-                        "quality": stream.get("quality", ""),
-                        "referrer": stream.get("referrer", ""),
-                        "user_agent": stream.get("user_agent", "")
-                    })
                 
-                channels.append({
-                    "id": channel_id,
-                    "name": channel.get("name", "Unknown"),
-                    "alt_names": channel.get("alt_names", []),
-                    "network": channel.get("network", ""),
-                    "country": channel.get("country", ""),
-                    "subdivision": channel.get("subdivision", ""),
-                    "city": channel.get("city", ""),
-                    "broadcast_area": channel.get("broadcast_area", []),
-                    "languages": channel.get("languages", []),
-                    "categories": channel.get("categories", []),
-                    "is_nsfw": channel.get("is_nsfw", False),
-                    "launched": channel.get("launched", ""),
-                    "closed": channel.get("closed", ""),
-                    "replaced_by": channel.get("replaced_by", ""),
-                    "website": channel.get("website", ""),
-                    "logo": channel.get("logo", ""),
-                    "streams": streams_list,
-                    "streams_count": len(channel_streams)
-                })
+                # Solo agregar si tiene streams disponibles
+                if len(channel_streams) > 0:
+                    streams_list = []
+                    for stream in channel_streams[:5]:  # Limitar a 5 streams por canal
+                        streams_list.append({
+                            "url": stream.get("url", ""),
+                            "title": stream.get("title", ""),
+                            "quality": stream.get("quality", ""),
+                            "referrer": stream.get("referrer", ""),
+                            "user_agent": stream.get("user_agent", "")
+                        })
+                    
+                    channels.append({
+                        "id": channel_id,
+                        "name": channel.get("name", "Unknown"),
+                        "alt_names": channel.get("alt_names", []),
+                        "network": channel.get("network", ""),
+                        "country": channel.get("country", ""),
+                        "subdivision": channel.get("subdivision", ""),
+                        "city": channel.get("city", ""),
+                        "broadcast_area": channel.get("broadcast_area", []),
+                        "languages": channel.get("languages", []),
+                        "categories": channel.get("categories", []),
+                        "is_nsfw": channel.get("is_nsfw", False),
+                        "launched": channel.get("launched", ""),
+                        "closed": channel.get("closed", ""),
+                        "replaced_by": channel.get("replaced_by", ""),
+                        "website": channel.get("website", ""),
+                        "logo": channel.get("logo", ""),
+                        "streams": streams_list,
+                        "streams_count": len(channel_streams)
+                    })
+            
+            # Verificar si hay canales con streams
+            if not channels:
+                return JSONResponse(
+                    content={
+                        "status_code": 400,
+                        "message": f"No streams available for channels matching '{search}'. The channels exist but don't have public streaming URLs.",
+                        "search": search,
+                        "total_channels_found": len(filtered_channels),
+                        "channels_with_streams": 0,
+                        "developer": "El Impaciente",
+                        "telegram_channel": "https://t.me/Apisimpacientes"
+                    },
+                    status_code=400
+                )
             
             # Retornar respuesta exitosa
             return JSONResponse(
                 content={
                     "status_code": 200,
-                    "message": f"{len(channels)} results found",
+                    "message": f"{len(channels)} channels with streams found",
+                    "search": search,
+                    "total_channels_found": len(filtered_channels),
+                    "channels_with_streams": len(channels),
                     "developer": "El Impaciente",
                     "telegram_channel": "https://t.me/Apisimpacientes",
-                    "search": search,
-                    "total_results": len(filtered_channels),
-                    "showing": len(channels),
                     "channels": channels
                 },
                 status_code=200
