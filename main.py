@@ -151,12 +151,10 @@ async def get_tv_channels(search: str = ""):
             return JSONResponse(
                 content={
                     "status_code": 200,
-                    "message": f"{len(channels)} channels with streams found",
-                    "search": search,
-                    "total_channels_found": len(filtered_channels),
-                    "channels_with_streams": len(channels),
                     "developer": "El Impaciente",
                     "telegram_channel": "https://t.me/Apisimpacientes",
+                    "message": f"{len(channels)} resultados encontrados",
+                    "search": search,
                     "channels": channels
                 },
                 status_code=200
